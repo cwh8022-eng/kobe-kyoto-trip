@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Android Matchmaker: Sales Edition & 關西自駕一條龍</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --google-blue: #4285F4;
+            --google-red: #EA4335;
+            --google-yellow: #FBBC05;
+            --google-green: #34A853;
+            --android-green: #3DDC84;
+            --bg-gradient: linear-gradient(135deg, #FFF5F5 0%, #FFF9E6 50%, #F0F8FF 100%);
+            --card-shadow: 0 8px 24px rgba(255, 182, 193, 0.15);
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
+            background: var(--bg-gradient);
+            color: #4A4A4A;
+            line-height: 1.6;
+            padding-bottom: 60px;
+        }
+        header {
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            text-align: center;
+            border-bottom: 3px solid #FFD1DC;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(255, 182, 193, 0.1);
+        }
+        header h1 {
+            font-size: 1.3rem;
+            color: #FF6B8B;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        header p {
+            font-size: 0.78rem;
+            color: #888;
+            margin-top: 3px;
+        }
+        /* Tab Bar styling */
+        .tab-bar {
+            display: flex;
+            overflow-x: auto;
+            white-space: nowrap;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 12px 8px;
+            gap: 8px;
+            border-bottom: 1.5px solid #FFE4E1;
+            -webkit-overflow-scrolling: touch;
+        }
+        .tab-bar::-webkit-scrollbar {
+            display: none;
+        }
+        .tab-btn {
+            flex: 0 0 auto;
+            padding: 8px 16px;
+            border: none;
+            background-color: #FFF0F2;
+            color: #FF8DA1;
+            font-weight: 700;
+            font-size: 0.82rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(255, 182, 193, 0.1);
+        }
+        .tab-btn.active {
+            background-color: #FF6B8B;
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(255, 107, 139, 0.3);
+            transform: scale(1.03);
+        }
+        /* Tab Content Panel */
+        .tab-content {
+            display: none;
+            padding: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Toggle Map Button Style */
+        .image-toggle-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .toggle-btn {
+            background-color: #FFF0F2;
+            border: 1.5px solid #FFB6C1;
+            color: #FF6B8B;
+            font-weight: 700;
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 3px 8px rgba(255, 182, 193, 0.1);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .toggle-btn:hover {
+            background-color: #FFB6C1;
+            color: white;
+        }
+        /* Collapsible Itinerary Map Styling */
+        .itinerary-wrapper {
+            display: none;
+            margin: 15px auto;
+            text-align: center;
+        }
+        .itinerary-img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        /* Fallback bubble for error: DUSTY PINK & HIGHLY SECURED DISPLAY NONE BY DEFAULT */
+        .error-bubble {
+            display: none; /* CRITICAL: Must be hidden by default! */
+            background: #FFF0F5;
+            border: 2px dashed #FFB6C1;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px auto;
+            max-width: 95%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            text-align: left;
+            font-size: 0.85rem;
+            color: #C71585;
+        }
+        .error-bubble h4 {
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #DB7093;
+        }
+        .error-bubble ul {
+            margin-left: 20px;
+            margin-top: 5px;
+        }
+        .error-bubble li {
+            margin-bottom: 4px;
+        }
+        /* Cards Styling */
+        .card {
+            background-color: #fff;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 15px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid #FFE4E1;
+        }
+        .card-header {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #FF5E7E;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border-bottom: 1px dashed #FFE4E1;
+            padding-bottom: 6px;
+        }
+        .time-badge {
+            background-color: #FFEAEF;
+            color: #FF5E7E;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .card-content {
+            font-size: 0.85rem;
+            color: #555;
+        }
+        .card-content strong {
+            color: #333;
+        }
+        .card-content p {
+            margin-bottom: 6px;
+        }
+        .card-content ul {
+            margin-left: 18px;
+            margin-top: 4px;
+        }
+        .card-content li {
+            margin-bottom: 4px;
+        }
+        /* Alert Box */
+        .alert-box {
+            background-color: #FFF0F2;
+            border-left: 4px solid #FF6B8B;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: #C23B58;
+        }
+        .alert-box.green {
+            background-color: #EBFCEE;
+            border-left: 4px solid #2ECC71;
+            color: #1E6B34;
+        }
+        .alert-box.blue {
+            background-color: #EAF7FF;
+            border-left: 4px solid #3498DB;
+            color: #1A547A;
+        }
+        /* Navigation Button - Pill Style MINT GREEN */
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: #E2F9F3;
+            border: 1.5px solid #2ECC71;
+            color: #27AE60;
+            font-weight: 700;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            padding: 6px 14px;
+            text-decoration: none;
+            margin-top: 8px;
+            margin-bottom: 4px;
+            transition: all 0.2s ease;
+            box-shadow: 0 3px 8px rgba(46, 204, 113, 0.1);
+        }
+        .nav-btn:hover {
+            background-color: #2ECC71;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.25);
+            transform: translateY(-1px);
+        }
+        /* Section Dividers */
+        .sec-title {
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: #D25D70;
+            margin: 20px 0 10px 0;
+            padding-left: 8px;
+            border-left: 4px solid #FF8DA1;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        /* Habit Checklist block */
+        .habit-card {
+            background: linear-gradient(135deg, #FFF0F5 0%, #FFE4E1 100%);
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 25px;
+            box-shadow: 0 4px 15px rgba(255,182,193,0.2);
+            border: 1.5px solid #FFC0CB;
+        }
+        .habit-header {
+            font-size: 0.95rem;
+            font-weight: 900;
+            color: #C71585;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 12px;
+            border-bottom: 1.5px dashed #FFB6C1;
+            padding-bottom: 6px;
+        }
+        .habit-item {
+            font-size: 0.82rem;
+            color: #4A4A4A;
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+            line-height: 1.4;
+        }
+        .habit-item::before {
+            content: "✓";
+            position: absolute;
+            left: 2px;
+            color: #FF1493;
+            font-weight: bold;
+        }
+        /* Floating buttons */
+        .scroll-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(255, 107, 139, 0.9);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 99;
+        }
+        .scroll-top.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        footer {
+            background-color: #FFF0F2;
+            padding: 20px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #888;
+            border-top: 1.5px solid #FFE4E1;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🌸 關西自駕與慢活一條龍攻略</h1>
+        <p>手機互動互動 App · 體育教授 & 全家人專屬版</p>
+    </header>
+
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab(1)">D1 自駕起航</button>
+        <button class="tab-btn" onclick="switchTab(2)">D2 清水古風</button>
+        <button class="tab-btn" onclick="switchTab(3)">D3 貴船避暑</button>
+        <button class="tab-btn" onclick="switchTab(4)">D4 嵐山金閣</button>
+        <button class="tab-btn" onclick="switchTab(5)">D5 奈良宇治</button>
+        <button class="tab-btn" onclick="switchTab(6)">D6 稻荷觀音</button>
+        <button class="tab-btn" onclick="switchTab(7)">D7 環球特攻</button>
+        <button class="tab-btn" onclick="day8 = 8; switchTab(8);">Day 8 大阪暢遊</button>
+        <button class="tab-btn" onclick="switchTab(9)">D9 難波返台</button>
+    </div>
+
+    <div class="tab-contents">
+        <!-- ==================== DAY 1 ==================== -->
+        <div id="day-1" class="tab-content active">
+            <div class="image-toggle-container">
+                <button class="toggle-btn" onclick="toggleImage(1)">🗺️ 展開/收合 本日可愛行程圖表</button>
+            </div>
+            
+            <div id="wrapper-1" class="itinerary-wrapper" style="display: none;">
+                <img class="itinerary-img" src="第一天.jpg" alt="本日可愛行程圖表" onerror="handleImageError(this, 1, '第一天.jpg')">
+            </div>
+
+            <div id="error-bubble-1" class="error-bubble" style="display: none;">
+                <h4>🌸 溫馨提示：本地行程圖對接指南</h4>
+                <p>手機未偵測到本地圖檔或處於離線狀態，若要正常顯示手繪行程圖，請：</p>
+                <ul>
+                    <li>將您下載的 <strong>第一天.png</strong> 轉為 <strong>第一天.jpg</strong> 格式。</li>
+                    <li>確保圖片檔名為小寫副檔名 <strong>第一天.jpg</strong>。</li>
+                    <li>將網頁與 9 張 JPG 圖檔放在手機/電腦的 <strong>同一個資料夾</strong> 中開啟或上傳部署。</li>
+                </ul>
+            </div>
+
+            <div class="sec-title">🛣️ 桃園出發：自駕極速特攻</div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">03:20 - 03:46</span>
+                    <span>全新通車：直上淡江大橋 ➡️ 台61線</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>行車路線：</strong> 自淡水端（沙崙路／中正路二段匝道）直上 <strong>淡江大橋</strong>（2026年5月12日正式通車）跨越淡水河口，免去繞行關渡大橋之苦！八里端直接接軌 <strong>台61線西濱快速道路</strong> 一路南下，由大園端切回機場聯絡道抵達桃園機場。</p>
+                    <p><strong>省時效益：</strong> 路程縮短 15 公里，清晨高架路況單純無紅綠燈。<strong>開車僅需 26 分鐘即可抵達桃園機場</strong>（比原關渡大橋路線快了近 15 分鐘），行車體驗極度流暢放鬆！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Danjiang+Bridge+New+Tamsui" target="_blank" class="nav-btn">🟢 淡江大橋新路線導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">03:46 - 04:20</span>
+                    <span>超前抵達二航與輕鬆停車</span>
+                </div>
+                <div class="card-content">
+                    <p>直接停進 <strong>第二航廈正下方的 P4 地下停車場</strong>，走室內聯絡通道搭電梯直接到 3 樓出境大廳，完全免吹風淋雨。因為 03:46 即超前抵達，全家可以極度從容地排隊、上洗手間、吃點心。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Taoyuan+Airport+Terminal+2+P4+Parking" target="_blank" class="nav-btn">🟢 桃園機場P4地下停車場導航</a>
+                </div>
+            </div>
+
+            <div class="sec-title">✈️ 飛往神戶與三宮特攻</div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">04:20 - 11:10</span>
+                    <span>長榮 BR134 翱翔與 Port Liner 捷運</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>04:20-06:20</strong> 辦理長榮航空報到與託運，悠閒逛免稅店或享用早餐。<strong>06:20-10:00</strong> 搭乘長榮航空飛往神戶，日本時間 <strong>10:00</strong> 降落於神戶機場 (UKB)。出關後單買 3 張 340 日圓單程票，搭 Port Liner 捷運 11:10 抵達市區「三之宮站」。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Kobe+Airport" target="_blank" class="nav-btn">🟢 神戶機場站導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">11:10 - 11:30</span>
+                    <span>購買實體 ICOCA 與寄存行李</span>
+                </div>
+                <div class="card-content">
+                    <p>在 JR 三之宮站自動售票機現金購買 3 張 <strong>實體 ICOCA 卡</strong> 並儲值 5,000 日圓，並在車站大廳找到大型置物櫃（Coin Locker）嗶 ICOCA 鎖上全家的大行李箱，輕鬆兩手空空出發！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=JR+Sannomiya+Station" target="_blank" class="nav-btn">🟢 JR三之宮站置物櫃區域導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">11:30 - 12:40</span>
+                    <span>午餐：平價神戶牛排鐵板燒與爆漿可樂餅</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>平價神戶牛：</strong> 步行至三宮站西口（七口）附近的懷舊風排隊名店 <strong>【Steak Land 神戶店】</strong>，全家大快朵頤享用超高 CP 值的平價神戶牛排鐵板燒（若人多可去旁邊座位較多的分店「神戶館」）！</p>
+                    <p><strong>森谷商店可樂餅：</strong> 吃飽後散步到元町商店街入口的排隊名舖【森谷商店】，買個現炸 <strong>神戶牛可樂餅</strong>（一個 110 日圓）。外皮薄脆、裡面能吃到扎實有肉感的大塊牛肉碎，帶上火車當美味點心！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Steak+Land+Kobe+Sannomiya" target="_blank" class="nav-btn">🟢 平價神戶牛排鐵板燒(Steak Land)一鍵導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Moriya+Shoten+Motomachi" target="_blank" class="nav-btn">🟢 森谷商店元町本店導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">12:40 - 14:00</span>
+                    <span>生田神社戀愛水占卜與高空觀景</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>生田神社：</strong> 沿生田大道往山坡漫步 5 分鐘，造訪神戶最古老神社之一的 <strong>【生田神社】</strong>。帶孩子體驗著名的「戀愛水占卜」（一張 300 日圓），把空白籤詩放入森林御手洗池水中，運勢文字就會慢慢神奇顯現！</p>
+                    <p><strong>神戶市役所：</strong> 散步去市役所大樓搭電梯直上 24 樓觀景台吹冷氣。天氣晴朗時可一口氣將整個神戶棋盤街景與神戶機場盡收眼底！隨後散步回置物櫃領大行李，刷實體 ICOCA 卡進入 JR 剪票口。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Ikuta+Shrine+Kobe" target="_blank" class="nav-btn">🟢 生田神社導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Kobe+City+Hall+Observatory" target="_blank" class="nav-btn">🟢 神戶市役所展望台導航</a>
+                </div>
+            </div>
+
+            <div class="sec-title">🚄 前往京都與古風慢活夏夜</div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">14:07 - 17:30</span>
+                    <span>搭乘新快速 ➡️ 飯店 Check-in ➡️ 午睡補眠</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>14:07-14:59</strong> 搭乘 JR 新快速列車直奔京都（車程固定 52 分鐘）。<strong>15:00-15:20</strong> 烏丸中央口出站過馬路 1 分鐘，直達 <strong>【京都法華俱樂部飯店】</strong> 辦理入住。</p>
+                    <p><strong>15:20-17:30 黃金補眠 2 小時：</strong> 全家洗熱水澡，在舒服的床上大睡一覺！這 2 小時的大補眠能徹底消除清晨三點起床的疲勞，充飽體力！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Hotel+Hokke+Club+Kyoto" target="_blank" class="nav-btn">🟢 京都法華俱樂部飯店導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">17:30 - 20:30~</span>
+                    <span>晚餐：名代豬排 ➡️ 先斗町與鴨川畔漫步</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>名代豬排三條本店：</strong> 搭地鐵從京都站經烏丸御池轉至「京都市役所前站」。步行 5 分鐘穿過三條拱廊，在町家竹林長廊下大合照，享用外酥內嫩的頂級炸豬排！</p>
+                    <p><strong>先斗町 ➡️ 鴨川畔：</strong> 飯後順向往南走入紅燈籠高掛的古風 <strong>【先斗町】</strong>，隨後走到四條大橋下的 <strong>【鴨川畔】</strong> 坐在河床邊吹徐徐晚風，看納涼床的點點燈火。最後在四條河原町路邊攔計程車，10 分鐘冷氣直達法華飯店。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Katsukura+Sanjo+Kyoto" target="_blank" class="nav-btn">🟢 名代豬排三條本店導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Pontocho+Alley+Kyoto" target="_blank" class="nav-btn">🟢 先斗町老街一鍵導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Shijo+Bridge+Kyoto+Kamogawa" target="_blank" class="nav-btn">🟢 鴨川四條大橋導航</a>
+                </div>
+            </div>
+
+            <!-- Habit Card Day 1 -->
+            <div class="habit-card">
+                <div class="habit-header">🎓 體育教授 Day 1 斷捨離與每日定課</div>
+                <div class="habit-item"><strong>數位斷捨離：</strong> 刪除或封存手機中 10 個過期、無效的工作群組或通知，專注於當下旅程。</div>
+                <div class="habit-item"><strong>實體斷捨離：</strong> 在桃園機場整理皮夾，將新台幣百元鈔、日圓現鈔、金融卡、信用卡分類整齊，其餘非出國用卡片一律清出。</div>
+                <div class="habit-item"><strong>大腦斷捨離：</strong> 告訴自己「學校行政公文已交代妥當，這 9 天我只是全家人的專屬導遊與神隊友」。</div>
+                <div class="habit-item"><strong>每日打掃定課：</strong> 出門前花 5 分鐘，確保房間內書桌、電視櫃維持 100% 清空，不留任何雜物。</div>
+            </div>
+        </div>
+
+        <!-- ==================== DAY 2 ==================== -->
+        <div id="day-2" class="tab-content">
+            <div class="image-toggle-container">
+                <button class="toggle-btn" onclick="toggleImage(2)">🗺️ 展開/收合 本日可愛行程圖表</button>
+            </div>
+            
+            <div id="wrapper-2" class="itinerary-wrapper" style="display: none;">
+                <img class="itinerary-img" src="第二天.jpg" alt="本日可愛行程圖表" onerror="handleImageError(this, 2, '第二天.jpg')">
+            </div>
+
+            <div id="error-bubble-2" class="error-bubble" style="display: none;">
+                <h4>🌸 溫馨提示：本地行程圖對接指南</h4>
+                <p>手機未偵測到本地圖檔或處於離線狀態，若要正常顯示手繪行程圖，請：</p>
+                <ul>
+                    <li>將您下載的 <strong>第二天.png</strong> 轉為 <strong>第二天.jpg</strong> 格式。</li>
+                    <li>確保圖片檔名為小寫副檔名 <strong>第二天.jpg</strong>。</li>
+                    <li>將網頁與 9 張 JPG 圖檔放在手機/電腦的 <strong>同一個資料夾</strong> 中開啟或上傳部署。</li>
+                </ul>
+            </div>
+
+            <div class="sec-title">⛩️ 晨光特攻：無人空景清水寺</div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">07:30 - 08:30</span>
+                    <span>公車特攻：搶在和服大軍湧入前抵達</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>乘車密技：</strong> 07:30 出門！步行至飯店對面的「京都車站前巴士總站」 <strong>D2 候車區</strong>，刷實體 ICOCA 卡搭乘 <strong>「京都市巴士 206 路」</strong>，在 <strong>五條坂公車站</strong> 下車。下車後順向步行上山。</p>
+                    <p><strong>避暑優勢：</strong> 換和服體驗多在 09:00 開門，09:30 後人潮會爆炸。此時清晨氣溫涼爽，是拍無人空景的唯一黃金期！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Kyoto+Station+Bus+Terminal+D2" target="_blank" class="nav-btn">🟢 京都車站巴士站 D2候車區導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Gojozaka+Bus+Stop+Kyoto" target="_blank" class="nav-btn">🟢 五條坂巴士站導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">08:30 - 09:30</span>
+                    <span>清水寺六大精華看點 ＆ 廁所防線</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>買票與參拜：</strong> 現場付現購買門票（成人 500 日圓）。
+                    <ul>
+                        <li><strong>仁王門：</strong> 宏偉朱紅正門。從下方往上拍，感受如屏風般的空間美學。</li>
+                        <li><strong>三重塔：</strong> 日本最大木造塔之一。</li>
+                        <li><strong>出世大黑天：</strong> 拖鞋進入本堂，瞻仰祈求事業才運的黑臉大黑天，並拿重棒敲響金石，清除雜念。</li>
+                        <li><strong>奧之院舞台大合照：</strong> 朝著本堂方向拍下最經典的純木造懸空「懸造式」舞台大合照。</li>
+                        <li><strong>音羽之瀑：</strong> 泉水分為「健康、戀愛、學業」。<strong>只能三選一喝一口</strong>，全家一致選擇最珍貴的「健康」泉水！</li>
+                    </ul>
+                    </p>
+                    <div class="alert-box">🚨 <strong>!!! 嚴守清水寺內廁所防線 !!!</strong> 二年坂、三年坂老街內公廁極為稀少。熱門的「榻榻米星巴克」全店更只有一間男女公用廁所！強烈建議在離開清水寺前，務必先在寺廟內上完洗手間再出發！</div>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Kiyomizudera+Kyoto" target="_blank" class="nav-btn">🟢 清水寺仁王門導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Otowa+Waterfall+Kiyomizudera" target="_blank" class="nav-btn">🟢 清水寺音羽之瀑導航</a>
+                </div>
+            </div>
+
+            <div class="sec-title">🍃 石坂古道漫步與佛心下午茶</div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">09:30 - 13:30</span>
+                    <span>三年坂二年坂 ➡️ 榻榻米星巴克 ➡️ 藤菜美</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>石坂古道散步：</strong> 從清水寺出來後一路 <strong>順向下坡</strong>，避開陡峭台階，漫步穿過 <strong>【三年坂】</strong> ➡️ <strong>【七味家本舖】</strong> ➡️ <strong>【Snoopy Chocolat清水店】</strong>。</p>
+                    <p><strong>本家西尾生八橋清水坂店：</strong> 超佛心休息區！店員大方奉上免費熱茶與各種口味生八橋試吃。大推「黑芝麻」與「肉桂」口味，配茶吃極香！</p>
+                    <p><strong>榻榻米星巴克（二年坂彌榮茶屋店）：</strong> 百年日式町家古蹟。<strong>搶位密技：</strong> 樓梯窄且上下行分開，上樓後 <strong>趕快先找二樓的三處日式榻榻米座位卡位</strong>，再去一樓點咖啡！</p>
+                    <p><strong>藤菜美高台寺店：</strong> 這裡空間寬敞、有強效冷氣！點一份醬油糰子與冰抹茶（一組約 300 多日圓）舒服歇腳。<strong>老饕拍照點：</strong> 旁邊的高台寺停車場，拍向「八坂之塔（法觀寺）」的角度完全沒有電線桿或大樓阻擋，背景極其乾淨！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Starbucks+Coffee+Kyoto+Ninenzaka+Yasaka+Chaya" target="_blank" class="nav-btn">🟢 榻榻米星巴克二年坂店導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Fujinami+Kodaiji" target="_blank" class="nav-btn">🟢 藤菜美高台寺店一鍵導航</a>
+                </div>
+            </div>
+
+            <div class="sec-title">🍧 祇園冰品防線與 T8 動漫天堂</div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">13:30 - 16:30</span>
+                    <span>高台寺蕎麥麵 ➡️ 鍵善良房黑糖葛切 ➡️ 八坂神社</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>蕎麥冷麵午餐：</strong> 在高台寺周邊吃一碗冰涼清爽的「日式天婦羅蕎麥冷麵」，完美躲過正午一點的最強烈陽光。</p>
+                    <p><strong>鍵善良房 本店：</strong> 散步至祇園。必點雙層綠色漆器裝著的 <strong>「黑糖葛切 (Kuzukiri)」</strong>。透亮葛切滑入冰塊水中，沾著濃郁沖繩黑糖蜜入口，瞬間洗去所有暑氣與疲勞！</p>
+                    <p><strong>八坂神社：</strong> 飯後散步至正對面。參拜大國主社小白兔（可買兔子御守）；黃昏時分，舞殿的上百座奉納燈籠會徐徐點亮，非常浪漫。西樓門旁有造型獨特的「太極圖案」公廁。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Kagizen+Yoshifusa+Gion" target="_blank" class="nav-btn">🟢 鍵善良房本店一鍵導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Yasaka+Shrine+Kyoto" target="_blank" class="nav-btn">🟢 八坂神社導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">16:30 - 18:30</span>
+                    <span>高島屋 T8：中村藤吉 ＆ 任天堂京都店</span>
+                </div>
+                <div class="card-content">
+                    <p>步行跨過四條大橋，進入最涼爽的百貨冷氣戰區 <strong>河原町高島屋 S.C. (T8)</strong>：</p>
+                    <p><strong>中村藤吉 3 樓店：</strong> 入座即送精緻歡迎茶，必點口感層次豐富的經典 <strong>「抹茶聖代 (巴菲)」</strong>（避雷：鬆餅偏乾）。等位時可到旁邊試戴極輕的「金子眼鏡」。</p>
+                    <p><strong>任天堂京都旗艦店 (Nintendo Kyoto)：</strong> 1 樓入口處有巨大水管瑪利歐；7 樓重現紅白機配色，販售大量京都限量的獨家周邊；8 樓露天平台則有遊戲中經典的「破關終點旗」，全家必擺出跳躍動作拍照大合影！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Nakamura+Tokichi+Kyoto+Takashimaya" target="_blank" class="nav-btn">🟢 中村藤吉高島屋店導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Nintendo+Kyoto+Takashimaya" target="_blank" class="nav-btn">🟢 任天堂京都旗艦店導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">18:30 - 20:30~</span>
+                    <span>晚餐二選一 ➡️ 車站空中走廊看京都塔</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>選項 A（祇園 天周）：</strong> 享用最招牌、比手掌還大的「大海老天丼」（巨大炸蝦飯），隨後直接在四條通攔計程車 10 分鐘回飯店（車資約 1,200 日圓）。</p>
+                    <p><strong>選項 B（京都車站拉麵小路）：</strong> 走 10 分鐘到四條站搭地鐵烏丸線（2站4分鐘）直達京都車站。上樓去拉麵小路大推 <strong>「冰護熟成豚骨拉麵」</strong>，招牌是粉紅色熟成豬肉片與入口即化的滷厚豬肉。吃完後從中央口上 <strong>右側手扶梯</strong> 直達頂樓 <strong>【空中走廊 (Skyway)】</strong>，在免人擠人的高空通道中與夜晚發光的京都塔平行對齊合照！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Gion+Tenshu" target="_blank" class="nav-btn">🟢 祇園天周炸蝦飯導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Kyoto+Station+Ramen+Koji" target="_blank" class="nav-btn">🟢 京都車站拉麵小路導航</a>
+                </div>
+            </div>
+
+            <!-- Habit Card Day 2 -->
+            <div class="habit-card">
+                <div class="habit-header">🎓 體育教授 Day 2 斷捨離與每日定課</div>
+                <div class="habit-item"><strong>數位斷捨離：</strong> 回飯店前，清空手機相簿中為了測試 AI 動作辨識（YOLO）或截圖文獻留下的海量無用測試螢幕截圖。</div>
+                <div class="habit-item"><strong>實體斷捨離：</strong> 將今天走石坂古道流汗換下的舊運動內衣褲或洗沐旅行試用包，用完即在京都飯店丟棄，為行李減重。</div>
+                <div class="habit-item"><strong>大腦斷捨離：</strong> 釋放「凡事都要拍到完美無暇照片」的焦慮，欣賞手機拍下的自然神態，不完美即是美。</div>
+                <div class="habit-item"><strong>每日打掃定課：</strong> 回房洗澡前，順手將浴室洗臉台的水漬擦乾。讓全家在舒適乾燥的空間中梳洗放鬆。</div>
+            </div>
+        </div>
+
+        <!-- ==================== DAY 3 ==================== -->
+        <div id="day-3" class="tab-content">
+            <div class="image-toggle-container">
+                <button class="toggle-btn" onclick="toggleImage(3)">🗺️ 展開/收合 本日可愛行程圖表</button>
+            </div>
+            
+            <div id="wrapper-3" class="itinerary-wrapper" style="display: none;">
+                <img class="itinerary-img" src="第四天.jpg" alt="本日可愛行程圖表" onerror="handleImageError(this, 3, '第四天.jpg')">
+            </div>
+
+            <div id="error-bubble-3" class="error-bubble" style="display: none;">
+                <h4>🌸 溫馨提示：本地行程圖對接指南</h4>
+                <p>手機未偵測到本地圖檔或處於離線狀態，若要正常顯示手繪行程圖，請：</p>
+                <ul>
+                    <li>將您下載的 <strong>第四天.png</strong> 轉為 <strong>第四天.jpg</strong> 格式。</li>
+                    <li>確保圖片檔名為小寫副檔名 <strong>第四天.jpg (新・第三天貴船線)</strong>。</li>
+                    <li>將網頁與 9 張 JPG 圖檔放在手機/電腦的 <strong>同一個資料夾</strong> 中開啟或上傳部署。</li>
+                </ul>
+            </div>
+
+            <div class="sec-title">🌿 平日貴船消暑 ＆ 守護下鴨17:00防線</div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">08:30 - 10:45</span>
+                    <span>睡飽再出發 ➡️ 森林電車 ➡️ 直奔貴船</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>08:30-09:15：</strong> 全家睡到自然醒！在法華飯店享用早餐，補滿體力。今天是週五（平日），比週六人潮少了一半以上，前往貴船最明智！</p>
+                    <p><strong>09:15-10:45 森林鐵道：</strong> 刷 ICOCA 坐車至出町柳站，在站內轉乘 <strong>【叡山景觀電車】</strong> 一路直奔山林深處（車程 30 分鐘）。抵達貴船口站後，出站轉乘京都巴士 33 路（約 5 分鐘）送至貴船川溪谷上方。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Demachiyanagi+Station+Kyoto" target="_blank" class="nav-btn">🟢 出町柳站一鍵地圖規劃</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Kibuneguchi+Station" target="_blank" class="nav-btn">🟢 叡山電車貴船口站導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">10:45 - 14:00</span>
+                    <span>川床流水麵 ＆ 三大黃金避雷午餐備案</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>👑 主要方案 —— ひろ文川床流水麵：</strong> 抵達後第一時間往山谷深處衝 10 分鐘，前往【ひろ文】現場排隊、掏現鈔付現（每人 2,000 日圓）抽取號碼牌。若店家告知 <strong>等待時間在 1.5 小時內</strong>，建議在體感 23 度的涼爽川床上吹天然冷氣等候，體驗超好玩的流水細麵！</p>
+                    
+                    <div class="alert-box">🚨 <strong>!!! 現場防坑避雷防線 !!!</strong> 八月暑假若遇到突發人潮，導致「ひろ文」現場排隊時間超過 2 小時，為防止全家在曝曬下中暑並壓縮到下鴨神社（17:00關門），請立刻果斷啟用以下三大黃金避暑備案：</div>
+                    
+                    <p style="margin-top: 10px;"><strong>🍀 備案一：兵衛 Cafe (Hyoue Cafe) —— 泡腳川床下午茶（最推！）</strong><br>
+                    全貴船唯一！可一邊將雙腳浸泡進冰涼清澈的溪水裡、一邊在川床上喝冰咖啡與抹茶、吃最中餅。每人僅需 500 日圓川床費 ＋ 點一杯飲料，座位流動快，完全不用長排！</p>
+                    
+                    <p style="margin-top: 10px;"><strong>🍀 備案二：古今藤や (Kokon Fujiya) / 傳兵衛 —— 平價冷氣蕎麥麵</strong><br>
+                    就在貴船神社參道下方。古今藤や提供美味香魚與冰抹茶；傳兵衛提供自家製手打蕎麥冷麵（川床套餐僅 2,400 日圓），空間寬敞、冷氣強，完全不用排隊！</p>
+                    
+                    <p style="margin-top: 10px;"><strong>🍀 備案三：貴船茶屋 / 貴船莊 —— 100% 免等待提前預約</strong><br>
+                    提供極具儀式感的精緻川床京懷石（午餐套餐約 6,000 ~ 10,000 日圓）。提早一天網上預訂 11:30 席位，抵達直接無縫入座，悠雅尊貴！</p>
+                    
+                    <a href="https://www.google.com/maps/search/?api=1&query=Hirobun+Kibune+Kyoto" target="_blank" class="nav-btn">🟢 貴船ひろ文一鍵導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Hyoue+Cafe+Kibune" target="_blank" class="nav-btn">🟢 兵衛Cafe(Hyoue)一鍵導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Kokon+Fujiya+Kibune" target="_blank" class="nav-btn">🟢 古今藤や(Kokon)一鍵導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Dembei+Kibune" target="_blank" class="nav-btn">🟢 傳兵衛一鍵導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Kibunejaya" target="_blank" class="nav-btn">🟢 貴船茶屋一鍵導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">13:00 - 14:00</span>
+                    <span>貴船神社參拜 ➡️ 順向原路下山</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>貴船神社參拜：</strong> 餐後悠閒漫步參拜神社，欣賞翠綠青楓與朱紅獻燈。此時正值七夕祭，全家可以在各色心願詩籤上寫字並掛在竹枝上。隨後原路搭乘京都巴士 33 路 ＋ 叡山電車，舒服睡回市區的出町柳站。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Kifune+Shrine+Kyoto" target="_blank" class="nav-btn">🟢 貴船神社一鍵導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">15:00 - 16:30</span>
+                    <span>世界遺產下鴨神社 ＆ 御手洗川水占卜</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>提早 30 分鐘防線：</strong> 從出町柳站過馬路，直接散步穿過樹蔭濃密、遮陽防曬的 <strong>【糺之森（紅之森）】</strong> 原生古林。抵達御手洗池，購買空白御神籤（一張 300 日圓）放入冰涼溪水中，字體浮現時孩子超驚喜！</p>
+                    <p><strong>避雷紅利：</strong> 15:00 提早抵達，有 1.5 小時極其充裕的時間，可在 <strong>17:00 關門大限前</strong> 悠雅參拜與購買御守，完全不需提心吊膽！隨後在神社前搭乘市巴士 4 或 205 路，25 分鐘直達京都車站。</p>
+                    
+                    <div class="alert-box green">🟢 <strong>貴船神社前往下鴨神社交通三部曲：</strong><br>
+                    1. <strong>第一步：</strong> 從貴船神社沿緩下坡漫步至「貴船」公車站，搭京都巴士 33 路回到「貴船口站」（5分鐘）。<br>
+                    2. <strong>第二步：</strong> 搭乘叡山電車景觀列車，閉目養神 30 分鐘，一路看窗外翠綠青楓直達「出町柳站」。<br>
+                    3. <strong>第三步：</strong> 出站過大橋，順向散步 10 分鐘穿過糺之森原生林直達下鴨神社本殿，涼爽無阻！</div>
+
+                    <div class="alert-box">🚨 <strong>!!! 萬一下山延誤已超過 17:00 關門備案 !!!</strong><br>
+                    1. <strong>備案一：</strong> 轉戰 <strong>【鴨川三角洲：跳烏龜特攻 (出町柳站正對面)】</strong> 踩著溪中巨大的兔子與烏龜石景跨越鴨川，吹傍晚涼風，這可是著名動漫聖地！<br>
+                    2. <strong>備案二：</strong> 照常散步 <strong>【糺之森】</strong>，這片世界文化遺產古老森林 24 小時無圍欄開放，傍晚散步獨享靜謐芬多精！<br>
+                    3. <strong>不用遺憾：</strong> 溫柔提醒家人——我們 Day 1 在神戶生田神社，就已經完成過超神奇的「御手洗池水占卜」打卡囉！</div>
+                    
+                    <a href="https://www.google.com/maps/search/?api=1&query=Shimogamo+Jinja+Kyoto" target="_blank" class="nav-btn">🟢 下鴨神社一鍵導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Tadasu+no+Mori+Kyoto" target="_blank" class="nav-btn">🟢 糺之森森林入口導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Kamogawa+Delta+Kyoto" target="_blank" class="nav-btn">🟢 鴨川三角洲(跳烏龜)一鍵導航</a><br>
+                    <a href="https://www.google.com/maps/dir/?api=1&origin=Kifune+Shrine,+Kyoto&destination=Shimogamo+Jinja,+Kyoto" target="_blank" class="nav-btn">🟢 貴船神社至下鴨神社一鍵地圖規劃</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">17:00 - 18:30</span>
+                    <span>回房洗熱水澡 ＆ 黃金補眠（傍晚避暑）</span>
+                </div>
+                <div class="card-content">
+                    <p>比原定計畫提早半小時回到法華飯店。全家沖洗乾淨、換上乾爽衣服，在大床上午睡大補眠 1.5 小時。此時外面正是最曬、最悶熱的傍晚時刻，躲進冷氣房補眠是抗暑最大絕招！</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">18:30 之後</span>
+                    <span>晚餐：京都車站 10F 拉麵小路</span>
+                </div>
+                <div class="card-content">
+                    <p>晚餐直接過個馬路，在京都車站大樓 10 樓的 <strong>【拉麵小路】</strong> 享用。讓全家在十幾家頂尖拉麵售票機前「各自挑選最想吃的口味」（博多細麵、札幌味噌或德島拉麵等）。吃飽上頂樓 Skyway 散步看京都塔夜景，回對面法華飯店舒服躺平！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Kyoto+Station+Ramen+Koji" target="_blank" class="nav-btn">🟢 京都車站拉麵小路導航</a>
+                </div>
+            </div>
+
+            <!-- Habit Card Day 3 -->
+            <div class="habit-card">
+                <div class="habit-header">🎓 體育教授 Day 3 斷捨離與每日定課</div>
+                <div class="habit-item"><strong>數位斷捨離：</strong> 利用往返貴船的 20 分鐘火車時間，一鍵取消不再閱讀的國外學術電子報，整頓或刪除萬封未讀的過期校內公告信。</div>
+                <div class="habit-item"><strong>實體斷捨離：</strong> 傍晚在四條河原町或拉麵小路買完紀念品後，拆除所有無用的紙盒外包裝，以裸裝方式直立式塞進行李箱，現場丟棄垃圾。</div>
+                <div class="habit-item"><strong>大腦斷捨離：</strong> 學習放下對「完美對接每一班公車/火車」的控制欲。車走了一班，下一班依然會來，享受沿途清涼的景色。</div>
+                <div class="habit-item"><strong>每日打掃定課：</strong> 出門前 5 分鐘，確保浴室洗臉台、淋浴玻璃維持 100% 擦乾，不留水漬。</div>
+            </div>
+        </div>
+        <!-- ==================== DAY 4 ==================== -->
+        <div id="day-4" class="tab-content">
+            <div class="image-toggle-container">
+                <button class="toggle-btn" onclick="toggleImage(4)">🗺️ 展開/收合 本日可愛行程圖表</button>
+            </div>
+            
+            <div id="wrapper-4" class="itinerary-wrapper" style="display: none;">
+                <img class="itinerary-img" src="第三天.jpg" alt="本日可愛行程圖表" onerror="handleImageError(this, 4, '第三天.jpg')">
+            </div>
+
+            <div id="error-bubble-4" class="error-bubble" style="display: none;">
+                <h4>🌸 溫馨提示：本地行程圖對接指南</h4>
+                <p>手機未偵測到本地圖檔或處於離線狀態，若要正常顯示手繪行程圖，請：</p>
+                <ul>
+                    <li>將您下載的 <strong>第三天.png</strong> 轉為 <strong>第三天.jpg</strong> 格式。</li>
+                    <li>確保圖片檔名為小寫副檔名 <strong>第三天.jpg (新・第四天嵐山線)</strong>。</li>
+                    <li>將網頁與 9 張 JPG 圖檔放在手機/電腦的 <strong>同一個資料夾</strong> 中開啟或上傳部署。</li>
+                </ul>
+            </div>
+
+            <div class="sec-title">🎋 嵐山仙境 ＆ 計程車特攻金閣寺</div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">08:00 - 09:30</span>
+                    <span>進進堂現烤麵包 ➡️ JR 直奔嵐山</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>08:00-08:50 進進堂早餐：</strong> 步行至京都車站內的百年老字號 <strong>【進進堂】</strong>，享用現烤香濃可頌、手作三明治與冰咖啡，開啟活力一天！</p>
+                    <p><strong>08:50-09:30 鐵道直達：</strong> 刷 ICOCA 進入 JR京都車站，前往 31-33 月台搭乘 <strong>【JR 嵯峨野線】</strong>（往園部方向），約 20 分鐘直達「嵯峨嵐山站」下車。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Shinshindo+Kyoto+Station" target="_blank" class="nav-btn">🟢 進進堂一鍵導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Saga-Arashiyama+Station" target="_blank" class="nav-btn">🟢 JR嵯峨嵐山站一鍵導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">09:30 - 13:15</span>
+                    <span>竹林小徑與渡月橋 ➡️ 吹冷氣和牛午餐</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>大自然漫步：</strong> 下車後不需坐小火車，直接順著指標步行進入 <strong>【竹林小徑】</strong>。在綠意蔽日的清幽高聳竹林中合影，隨後緩步下行走到 <strong>【渡月橋】</strong> 畔看大堰川波光粼粼。</p>
+                    <p><strong>嵐山大街血拼：</strong> 隨後到繁華的大街。這裡有孩子最愛的拉拉熊茶屋、Snoopy 巧克力專賣店等。中午躲進大街旁的冷氣餐廳，大口享用炙燒和牛丼飯或傳統清爽湯豆腐，讓雙腿在冷氣房裡獲得 100% 充電！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Arashiyama+Bamboo+Grove" target="_blank" class="nav-btn">🟢 嵐山竹林一鍵導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">13:15 - 15:30</span>
+                    <span>橫切特攻：計程車直達金閣寺大門</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>🚖 破格特攻（全天最關鍵省力點！）：</strong> 午餐後，直接在嵐山大街攔排班計程車，或用手機 App 叫 <strong>Uber / GO</strong>。</p>
+                    <p><strong>省時省力效益：</strong> 車資僅約 2,500 ~ 3,000 日圓（台幣 500-600 元，3 人分攤極划算）。全家直接在強效冷氣車廂內舒服午休 20 分鐘，<strong>完美避開所有繁複的公車電車轉乘與烈日中暑焦慮</strong>，眼睛一睜開就已抵達金閣寺大門口！</p>
+                    <p><strong>午後金閣寺：</strong> 購買御守門票進園。<strong>最佳拍照秘密：</strong> 14:00 過後的午後，太陽西斜，燦爛的陽光會完美灑在鏡湖池中央的舍利殿上，可以輕鬆拍到最金碧輝煌、完全不逆光的絕美倒影！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Kinkakuji+Temple+Kyoto" target="_blank" class="nav-btn">🟢 目的地金閣寺一鍵導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Kinkakuji+Entrance" target="_blank" class="nav-btn">🟢 金閣寺一鍵導航</a>
+                </div>
+            </div>
+
+            <div class="sec-title">🤤 傍晚：新京極商圈與萬代扭蛋大合體</div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">15:30 - 17:00</span>
+                    <span>市巴士 ➡️ 16:15 錦市場海鮮與小吃特攻</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>15:30-16:15：</strong> 從金閣寺出來，刷 ICOCA 搭乘 <strong>「市巴士 12 路 或 205 路」</strong>，一路吹冷氣直達最繁華的「四條河原町」站下車。</p>
+                    <p><strong>16:15-17:00 錦市場：</strong> 下車後直接從錦天滿宮東側起點拐入 <strong>【錦市場】</strong>！此時攤位全開，全家展開 45 分鐘的海鮮散步。大快朵頤現烤大生蠔、生魚片串、厚燒玉子燒與烤扇貝，大飽口福！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Shijo+Kawaramachi+Bus+Stop" target="_blank" class="nav-btn">🟢 四條河原町一鍵導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Nishiki+Market+Kyoto" target="_blank" class="nav-btn">🟢 錦市場一鍵導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">17:00 - 20:00</span>
+                    <span>孩子天堂：萬代扭蛋店 ➡️ 一蘭拉麵</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>🎰 萬代官方扭蛋旗艦店 ＆ GiGO 夾娃娃（17:00-18:30）：</strong> 吃飽後走至新京極商店街，衝進 Edion 百貨 B1F 的 <strong>ガシャポンのデパートエディオン京都四条河原町店</strong>！這裡有冷氣極強、數百台扭蛋機的萬代官方直營店。這是犒賞國中男生的動漫狂歡時間！</p>
+                    <p><strong>🍜 晚餐（18:30-20:00）：</strong> 就在扭蛋店步行 2 分鐘的 <strong>【一蘭拉麵 京都河原町店】</strong>！帶孩子體驗最經典的「一人一格」K書中心吃麵，在濃郁豚骨湯中加入秘製辣醬，美味又飽足！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Bandai+Gashapon+Department+Store+Kyoto+Four+Shijo" target="_blank" class="nav-btn">🟢 萬代扭蛋 Edion B1一鍵導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Ichiran+Ramen+Kyoto+Kawaramachi" target="_blank" class="nav-btn">🟢 一蘭拉麵一鍵導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">20:00 之後</span>
+                    <span>兩站地鐵直達 ➡️ 回飯店休息</span>
+                </div>
+                <div class="card-content">
+                    <p>吃飽出來散步 10 分鐘到地鐵「四條站」，搭乘地鐵烏丸線僅需 2 站（5分鐘）直達京都車站。出站過個馬路 1 分鐘回法華飯店，洗熱水澡，整理今日大斬獲，滿足入睡！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Shijo+Station+Kyoto" target="_blank" class="nav-btn">🟢 地鐵四條站一鍵導航</a>
+                </div>
+            </div>
+
+            <!-- Habit Card Day 4 -->
+            <div class="habit-card">
+                <div class="habit-header">🎓 體育教授 Day 4 斷捨離與每日定課</div>
+                <div class="habit-item"><strong>數位斷捨離：</strong> 卸載手機中超過半年沒打開、或當初為了短期測試下載的無效 App，只留下常用開發測試與旅行工具，重新分類桌面。</div>
+                <div class="habit-item"><strong>實體斷捨離：</strong> 轉完扭蛋後，在四條河原町或飯店房間立刻<strong>「拆除所有紙盒包裝與扭蛋塑膠殼」</strong>！只留核心周邊，塑膠殼垃圾一律現場丟棄，不佔用寶貴行李容積。</div>
+                <div class="habit-item"><strong>大腦斷捨離：</strong> 劃掉自己本本中「不可能完成的非核心研究計畫」，將寶貴大腦運算空間留給未來的「AI高齡健康管理」！</div>
+                <div class="habit-item"><strong>每日打掃定課：</strong> 出門前 5 分鐘，確保房間內所有插座周邊不堆積雜物，垃圾確實分类扔進垃圾桶。</div>
+            </div>
+        </div>
+
+        <!-- ==================== DAY 5 ==================== -->
+        <div id="day-5" class="tab-content">
+            <div class="image-toggle-container">
+                <button class="toggle-btn" onclick="toggleImage(5)">🗺️ 展開/收合 本日可愛行程圖表</button>
+            </div>
+            
+            <div id="wrapper-5" class="itinerary-wrapper" style="display: none;">
+                <img class="itinerary-img" src="第五天.jpg" alt="本日可愛行程圖表" onerror="handleImageError(this, 5, '第五天.jpg')">
+            </div>
+
+            <div id="error-bubble-5" class="error-bubble" style="display: none;">
+                <h4>🌸 溫馨提示：本地行程圖對接指南</h4>
+                <p>手機未偵測到本地圖檔或處於離線狀態，若要正常顯示手繪行程圖，請：</p>
+                <ul>
+                    <li>將您下載的 <strong>第五天.png</strong> 轉為 <strong>第五天.jpg</strong> 格式。</li>
+                    <li>確保圖片檔名為小寫副檔名 <strong>第五天.jpg</strong>。</li>
+                    <li>將網頁與 9 張 JPG 圖檔放在手機/電腦的 <strong>同一個資料夾</strong> 中開啟或上傳部署。</li>
+                </ul>
+            </div>
+
+            <div class="sec-title">🦌 奈良小鹿大佛 ＆ 志津香釜飯</div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">08:30 - 12:00</span>
+                    <span>快速鐵道直奔奈良 ➡️ 餵小鹿與大佛</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>交通動線：</strong> 09:30 從京都車站搭乘 <strong>【JR 奈良線・Miyakoji 快速列車】</strong>（みやこ路快速，45分鐘）直達 JR 奈良站。可轉搭 5 分鐘公車或步行 15 分鐘抵達東大寺。</p>
+                    <p><strong>朝聖大佛：</strong> 購買門票進殿，帶孩子瞻仰世界最大的青銅佛像 <strong>【東大寺大佛】</strong>。隨後在 <strong>【奈良公園】</strong> 買份鹿仙貝（200 日圓），讓國中男生體驗被小鹿包圍討食敬禮的趣味互動！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Todai-ji+Temple+Nara" target="_blank" class="nav-btn">🟢 東大寺大佛殿導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Nara+Park" target="_blank" class="nav-btn">🟢 奈良公園一鍵導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">12:00 - 14:30</span>
+                    <span>午餐盛宴：古法現煮 志津香釜飯</span>
+                </div>
+                <div class="card-content">
+                    <p>前往最具代表性的現點現煮老店 <strong>【志津香 公園店】</strong>。正午太陽最烈時，剛好在室內享用古法現烤的「七種釜飯」。底部帶有微微焦香的香脆鍋巴，極具特色，順便讓雙腿獲得充分歇腳。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Shizuka+Nara+Park" target="_blank" class="nav-btn">🟢 志津香公園店導航</a>
+                </div>
+            </div>
+
+            <div class="sec-title">🍵 宇治平等院 ＆ 國寶千年捕魚秀</div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">14:30 - 18:00</span>
+                    <span>鐵道北上宇治 ➡️ 平等院 ➡️ 頂級抹茶</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>14:36-15:10：</strong> 搭 JR 奈良線快速列車（往京都方向，約 30 分鐘）在 <strong>【JR 宇治站】</strong> 下車。</p>
+                    <p><strong>世界遺產 平等院：</strong> 散步穿過茶香老街，抵達 <strong>【平等院】</strong>。瞻仰阿字池上對稱優雅、展翅欲飛的「鳳凰堂」（10日圓硬幣與萬圓鈔背面的鳳凰圖騰）。拍出極具高級感的全家福！</p>
+                    <p><strong>宇治抹茶下午茶（16:30-18:00）：</strong> 來到宇治川畔的「中村藤吉 平等院店」或「伊藤久右衛門」，點一份消暑的抹茶竹筒聖代或抹茶蕨餅，看著滔滔溪水享受愜意時光。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=JR+Uji+Station" target="_blank" class="nav-btn">🟢 JR宇治站導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Byodoin+Temple+Uji" target="_blank" class="nav-btn">🟢 平等院鳳凰堂導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Nakamura+Tokichi+Uji" target="_blank" class="nav-btn">🟢 中村藤吉平等院店導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">18:00 - 19:45</span>
+                    <span>河畔便當 ➡️ 世界限定：宇治川 鵜飼捕魚秀</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>河畔便當與登船（18:00-18:30）：</strong> 步行至宇治川畔喜撰橋附近的觀光船售票處。買好票，全家在吹著晚風的船上享用精緻日式便當。</p>
+                    <p><strong>🔥 國寶級宮廷技藝 鵜飼秀（18:30-19:30）：</strong> 觀光船準時出航。漆黑的河面上點燃熊熊篝火，近距離觀賞英姿颯爽的「女性鵜匠」操控繩索，指揮身手矯健的鸕鶿在火光與水花間潛水捕魚！這延續千年的古老神聖捕魚技藝，在夏夜夜色中極具視覺震撼，是全網最羨慕的季節限定回憶！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Kisen+Bridge+Uji+Ukai" target="_blank" class="nav-btn">🟢 喜撰橋乘船處導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">20:15 - 21:00</span>
+                    <span>隱藏奇蹟：車站 Skyway 遠眺「五山送火」</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>京都一年一度「五山送火」祭典：</strong> 19:45 坐火車北上，大約 <strong>20:15 左右</strong> 駛入京都車站。此時正是大文字燒篝火熊熊點燃的時刻！</p>
+                    <p>全家直接登上京都車站大樓頂樓的 <strong>【空中走廊 (Skyway)】</strong> 或露天大階梯頂端，遠眺黑夜山頭中浮現的巨大「大」字篝火，親身見證京都夏夜最神聖的告別儀式！隨後回對面飯店收拾行李，準備明日大移動至大阪！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Kyoto+Station+Skyway" target="_blank" class="nav-btn">🟢 京都車站空中走廊導航</a>
+                </div>
+            </div>
+
+            <!-- Habit Card Day 5 -->
+            <div class="habit-card">
+                <div class="habit-header">🎓 體育教授 Day 5 斷捨離與每日定課</div>
+                <div class="habit-item"><strong>數位空間：</strong> 在宇治等待上船的空檔，精簡雲端硬碟中十年前的舊教材與無效數據快取，大腦不留懸念。</div>
+                <div class="habit-item"><strong>實體空間：</strong> 明天即將大移動到大阪。今晚睡前進行行李箱總盤點，淘汰不用的雜物，維持至少 20% 的空位應對前半段梅田採買。</div>
+                <div class="habit-item"><strong>大腦空間：</strong> 在日記中寫下對今年某次校務爭執或不愉快合作的釋懷，學會「點對點封存」，不把京都的壓力和糾結帶到大阪。</div>
+                <div class="habit-item"><strong>每日打掃定課：</strong> 京都退房前，將前五天的垃圾徹底分類打包、床鋪大致鋪平。優雅退房。</div>
+            </div>
+        </div>
+
+        <!-- ==================== DAY 6 ==================== -->
+        <div id="day-6" class="tab-content">
+            <div class="image-toggle-container">
+                <button class="toggle-btn" onclick="toggleImage(6)">🗺️ 展開/收合 本日可愛行程圖表</button>
+            </div>
+            
+            <div id="wrapper-6" class="itinerary-wrapper" style="display: none;">
+                <img class="itinerary-img" src="第六天.jpg" alt="本日可愛行程圖表" onerror="handleImageError(this, 6, '第六天.jpg')">
+            </div>
+
+            <div id="error-bubble-6" class="error-bubble" style="display: none;">
+                <h4>🌸 溫馨提示：本地行程圖對接指南</h4>
+                <p>手機未偵測到本地圖檔或處於離線狀態，若要正常顯示手繪行程圖，請：</p>
+                <ul>
+                    <li>將您下載的 <strong>第六天.png</strong> 轉為 <strong>第六天.jpg</strong> 格式。</li>
+                    <li>確保圖片檔名為小寫副檔名 <strong>第六天.jpg</strong>。</li>
+                    <li>將網頁與 9 張 JPG 圖檔放在手機/電腦的 <strong>同一個資料夾</strong> 中開啟或上傳部署。</li>
+                </ul>
+            </div>
+
+            <div class="sec-title">🦊 晨光稻荷與觀音 ➡️ 直奔大阪</div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">08:00 - 09:30</span>
+                    <span>JR 快速特攻：伏見稻荷大社 千本鳥居</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>退房與行李：</strong> 早上 08:00 退房並把大行李寄存法華飯店櫃檯。搭乘 JR 奈良線僅 5 分鐘在 <strong>「稻荷站」</strong> 下車。</p>
+                    <p><strong>千本鳥居：</strong> 避開人潮，快閃拍照大合照。<strong>保體力密技：</strong> 拍到鳥居即可折返，不爬山！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Fushimi+Inari+Taisha+Kyoto" target="_blank" class="nav-btn">🟢 伏見稻荷大社千本鳥居導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">09:30 - 11:30</span>
+                    <span>世界級震撼：三十三間堂 1001 尊千手觀音</span>
+                </div>
+                <div class="card-content">
+                    <p>從稻荷搭乘京阪電車僅需 2 站，在「七條站」下車，步行 5 分鐘抵達 <strong>【三十三間堂】</strong>。</p>
+                    <p>進入極長的大殿。帶孩子親眼瞻仰長達 120 公尺大殿中，無比震撼、金碧輝煌的 <strong>1001 尊千手觀音金身</strong>，以及二十八部眾神像。這份寧靜莊嚴會讓孩子終生難忘！參觀完後，搭地鐵回京都車站提領大行李。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Sanjusangendo+Kyoto" target="_blank" class="nav-btn">🟢 三十三間堂導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">12:00 - 15:30</span>
+                    <span>JR 新快速前往大阪梅田 ➡️ 梅田大丸血拼</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>12:00-13:00：</strong> 提領行李，搭乘 JR 新快速電車直奔「大阪梅田站」（車程 30 分鐘，在冷氣車廂內小憩）。</p>
+                    <p><strong>梅田大丸百貨動漫天堂（13:00-15:30）：</strong> 直接去梅田大丸百貨 13 樓。這裡有全關西最瘋狂的 <strong>【Nintendo OSAKA (任天堂梅田店)】</strong> 與 <strong>【寶可夢中心】</strong>！買齊孩子心儀的寶可夢與瑪利歐公仔周邊（建議把孩子的動漫採購任務在梅田解決，減輕最後一天的時間焦慮）。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=JR+Osaka+Station" target="_blank" class="nav-btn">🟢 大阪梅田站導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Daimaru+Umeda+Nintendo+Osaka" target="_blank" class="nav-btn">🟢 大丸梅田店(Nintendo/寶可夢)導航</a>
+                </div>
+            </div>
+
+            <div class="sec-title">🛌 APA難波塔 ＆ 國產牛燒肉盛宴</div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">15:30 - 18:30</span>
+                    <span>APA難波塔飯店 Check-in ➡️ 大浴場泡湯補眠</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>APA Check-in：</strong> 從梅田搭乘地鐵御堂筋線 4 站直達難波，步行 5 分鐘抵達全新、氣派的 <strong>【APA 難波車站前塔飯店】</strong> 辦理入住。</p>
+                    <p><strong>溫泉大補眠：</strong> 全家直接衝上 2F 露天溫泉大浴場！洗去一身汗水，躺在床上吹冷氣舒服補眠 1.5 小時，補滿特攻體力！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=APA+Hotel+Resort+Osaka+Namba+Ekimae+Tower" target="_blank" class="nav-btn">🟢 APA難波車站前塔飯店導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">18:30 之後</span>
+                    <span>晚餐：あぶりや (Aburiya) 國產牛燒肉吃到飽</span>
+                </div>
+                <div class="card-content">
+                    <p>晚餐走路 5 分鐘，大啖人氣爆棚的 <strong>【國產牛燒肉専門店 あぶりや】</strong>！大口品嚐肉質細嫩、帶有極致油花的現切國產牛排、厚切牛舌與精緻甜點。為明天的環球影城儲備滿滿卡路里！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Aburiya+Namba" target="_blank" class="nav-btn">🟢 あぶりや國產牛燒肉難波店導航</a>
+                </div>
+            </div>
+
+            <!-- Habit Card Day 6 -->
+            <div class="habit-card">
+                <div class="habit-header">🎓 體育教授 Day 6 斷捨離與每日定課</div>
+                <div class="habit-item"><strong>數位斷捨離：</strong> 刪除雲端硬碟中十年前的舊教材與無效系統備份快取，精簡個人檔案。</div>
+                <div class="habit-item"><strong>實體斷捨離：</strong> 入住大阪 APA 飯店後，徹底將行李箱內的衣物分區重新打包。</div>
+                <div class="habit-item"><strong>每日打掃定課：</strong> 出門前，床頭和桌面上不留任何雜物。洗臉台、水龍頭順手用毛巾擦得亮晶晶！</div>
+            </div>
+        </div>
+        <!-- ==================== DAY 7 ==================== -->
+        <div id="day-7" class="tab-content">
+            <div class="image-toggle-container">
+                <button class="toggle-btn" onclick="toggleImage(7)">🗺️ 展開/收合 本日可愛行程圖表</button>
+            </div>
+            
+            <div id="wrapper-7" class="itinerary-wrapper" style="display: none;">
+                <img class="itinerary-img" src="第七天.jpg" alt="本日可愛行程圖表" onerror="handleImageError(this, 7, '第七天.jpg')">
+            </div>
+
+            <div id="error-bubble-7" class="error-bubble" style="display: none;">
+                <h4>🌸 溫馨提示：本地行程圖對接指南</h4>
+                <p>手機未偵測到本地圖檔或處於離線狀態，若要正常顯示手繪行程圖，請：</p>
+                <ul>
+                    <li>將您下載的 <strong>第七天.png</strong> 轉為 <strong>第七天.jpg</strong> 格式。</li>
+                    <li>確保圖片檔名為小寫副檔名 <strong>第七天.jpg</strong>。</li>
+                    <li>將網頁與 9 張 JPG 圖檔放在手機/電腦的 <strong>同一個資料夾</strong> 中開啟或上傳部署。</li>
+                </ul>
+            </div>
+
+            <div class="sec-title">🎢 畢業主場：日本環球影城(USJ)熱血特攻</div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">🕒 快速通關精確時間表</span>
+                    <span>嚴格對齊，黃金卡位</span>
+                </div>
+                <div class="card-content">
+                    <ul>
+                        <li><strong>12:50 - 13:50：</strong> 進入【超級任天堂世界】園區（首要大事）</li>
+                        <li><strong>12:50 - 13:20：</strong> 快速通關暢玩【瑪利歐賽車：庫巴的挑戰書】</li>
+                        <li><strong>16:50 - 17:20：</strong> 快速通關暢玩【好萊塢美夢乘車遊 - 逆轉世界】（黃金夕陽場）</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">08:45 - 12:15</span>
+                    <span>優雅入園 ➡️ 哈利波特 ➡️ 柯南 4-D 秀</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>優雅入園：</strong> 早上不需像打仗一樣五、六點去排隊。08:45-09:15 優雅步入影城，直接前往 <strong>【哈利波特魔法世界】</strong>！此時人潮尚可，出示快速通關，爽玩極具感官震撼的【哈利波特禁忌之旅】，隨後在霍格華茲城堡前拍全家合影。</p>
+                    <p><strong>冷氣大秀：</strong> 11:00 前往好萊塢區，免預約直接觀看 <strong>【名偵探柯南 4-D 現場表演秀】</strong>，坐在極強冷氣的劇場內欣賞精彩爆破與3D舞台特效，體力充沛！</p>
+                    <p><strong>提前午餐：</strong> 11:45 在好萊塢區或紐約區（如：梅爾茲前線汽車餐廳）大口咬下美式漢堡，儲備下午體力，因為接下來是一場硬仗！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Universal+Studios+Japan" target="_blank" class="nav-btn">🟢 日本環球影城入口一鍵導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">12:50 - 15:30</span>
+                    <span>🔥 下午大主場：【超級任天堂世界】</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>庫巴挑戰書：</strong> 12:50 準時刷 QR Code 進入瑪利歐園區。第一件事：直接走 Express 通道，爽玩最人氣的 <strong>【瑪利歐賽車：庫巴的挑戰書】</strong>！</p>
+                    <p><strong>💡 咚奇剛瘋狂礦車排隊密技：</strong> 玩完賽車大約 13:30，全家此時已在園區深處，立刻順著通道繞去隔壁全新開幕的「咚奇剛國度」！既然人都進來了，就跟著現場隊伍把極速好玩的「瘋狂礦車」一併攻下！</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">15:30 - 17:20</span>
+                    <span>大白鯊/水世界 ➡️ 🚀 逆轉世界尖叫特攻</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>15:30-16:45：</strong> 從任天堂園區出來，順路把快通包含的「大白鯊」或「侏羅紀公園」玩掉，或去觀看經典爆破水世界特技秀，當作過渡與休息。</p>
+                    <p><strong>16:50 逆轉世界特攻：</strong> 準時抵達好萊塢區，使用快速通關，免排隊直接登上 <strong>【好萊塢美夢乘車遊 - 逆轉世界】</strong>！此時正值黃金黃昏，在夕陽與徐徐晚風中體驗「倒著衝刺」的極致高空尖叫與快感，全家絕對大呼過癮！</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">17:20 之後</span>
+                    <span>血拼、遊行與一線直達 APA 溫泉大浴場</span>
+                </div>
+                <div class="card-content">
+                    <p>四大王牌項目全數完美達陣！毫無壓力地陪孩子選購動漫周邊玩具、衣服，拍拍照、看精彩的夜間遊行。出園後在周邊享用香噴噴的「千房大阪燒」當晚餐。隨後搭電車回難波，直奔 APA 2F 大浴場泡露天溫泉、極致舒緩廢腿！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Chibo+Okonomiyaki+Universal+Citywalk" target="_blank" class="nav-btn">🟢 千房大阪燒環球影城店導航</a>
+                </div>
+            </div>
+
+            <!-- Habit Card Day 7 -->
+            <div class="habit-card">
+                <div class="habit-header">🎓 體育教授 Day 7 斷捨離與每日定課</div>
+                <div class="habit-item"><strong>實體斷捨離：</strong> 轉移血拼陣地。孩子心儀的動漫公仔周邊玩具，今天在環球影城與前天梅田大丸買足，衣服與伴手禮留到明後天，減輕體力負擔。</div>
+                <div class="habit-item"><strong>每日打掃定課：</strong> 回房洗熱水澡前，將今天在影城內製造的塑膠瓶、地圖小手冊與垃圾確實扔掉。</div>
+            </div>
+        </div>
+
+        <!-- ==================== DAY 8 ==================== -->
+        <div id="day-8" class="tab-content">
+            <div class="image-toggle-container">
+                <button class="toggle-btn" onclick="toggleImage(8)">🗺️ 展開/收合 本日可愛行程圖表</button>
+            </div>
+            
+            <div id="wrapper-8" class="itinerary-wrapper" style="display: none;">
+                <img class="itinerary-img" src="第八天.jpg" alt="本日可愛行程圖表" onerror="handleImageError(this, 8, '第八天.jpg')">
+            </div>
+
+            <div id="error-bubble-8" class="error-bubble" style="display: none;">
+                <h4>🌸 溫馨提示：本地行程圖對接指南</h4>
+                <p>手機未偵測到本地圖檔或處於離線狀態，若要正常顯示手繪行程圖，請：</p>
+                <ul>
+                    <li>將您下載的 <strong>第八天.png</strong> 轉為 <strong>第八天.jpg</strong> 格式。</li>
+                    <li>確保圖片檔名為小寫副檔名 <strong>第八天.jpg</strong>。</li>
+                    <li>將網頁與 9 張 JPG 圖檔放在手機/電腦的 <strong>同一個資料夾</strong> 中開啟或上傳部署。</li>
+                </ul>
+            </div>
+
+            <div class="sec-title">🎡 大阪樂遊券 OSAKA e-PASS：神級省錢特攻</div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">09:00 - 12:30</span>
+                    <span>睡飽出發 ➡️ 大阪城大合照 ＆ 黃金御座船</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>09:00-09:40：</strong> 全家在大床睡到自然醒，悠閒盥洗，在飯店周邊買杯拿鐵輕食打底。</p>
+                    <p><strong>09:40 出發地鐵：</strong> 刷 ICOCA 進入難波站搭乘地鐵長堀鶴見綠地線，15 分鐘在 <strong>「森之宮站」</strong> 下車。散步進入遼闊的大阪城公園，以天守閣為背景拍下全家福。</p>
+                    <p><strong>e-PASS 免費特權 ① —— 大阪城御座船（原價 1,500 日圓）：</strong> 散步至極樂橋旁，出示 e-PASS 二維碼免費兌換船票！登上金碧輝煌的日式仿古御座船，在護城河上吹著涼風、仰望天守閣，省力又高雅！（天守閣登頂可現場排隊買票入內）</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Morinomiya+Station" target="_blank" class="nav-btn">🟢 地鐵森之宮站一鍵導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Osaka+Castle+Gozabune" target="_blank" class="nav-btn">🟢 大阪城御座船碼頭導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">12:30 - 15:45</span>
+                    <span>中午：新世界炸串 ➡️ 通天閣與巨型滑梯</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>12:30-13:00 地鐵移動：</strong> 搭地鐵中央線轉堺筋線，在 <strong>「惠美須町站」</strong> 下車。一出站即是昭和懷舊風的「新世界商圈」。</p>
+                    <p><strong>元祖炸串 達摩（13:00-14:00）：</strong> 午餐在最招牌、門口有憤怒老闆大頭雕像的 <strong>【元祖炸串 達摩通天閣店】</strong> 享用。大口品嚐香脆多汁的炸牛肉串、鮮蝦與蔬菜，沾上秘製醬汁，對國中男生來說是停不下來的下町美味！</p>
+                    <p><strong>e-PASS 免費特權 ② —— 通天閣 Tower Slider（原價 1,000 日圓）：</strong> 今日是週三（平日），直接出示 e-PASS 二維碼，即可 <strong>免費挑戰</strong> 全關西最狂的「Tower Slider 巨型滑梯」！從通天閣 3 樓展望台一路極速滑行至地下一樓，僅需 10 秒，驚險刺激！</p>
+                    
+                    <div class="alert-box">🚨 <strong>!!! 暑假排隊防坑避雷防線 !!!</strong> 「Tower Slider 巨型滑梯」暑假排隊人潮極多，若當天排隊時間 <strong>超過 40 分鐘</strong>，為防止全家在盛夏烈日曝曬下中暑、並壓縮到後續道頓堀乘船，<strong>建議果斷放棄「天王寺動物園」</strong>！將所有體力完美留給滑梯特攻與最精采的道頓堀黃金班次觀光船！</div>
+                    
+                    <p style="margin-top: 10px;"><strong>e-PASS 免費特權 ③ —— 天王寺動物園（原價 500 日圓）：</strong> 若不需長排，可從通天閣散步 5 分鐘進入這座擁有百年歷史的都市型動物園。下午三點多烈日消退，在園內看超萌北極熊與河馬，重溫溫馨親子時光。</p>
+                    
+                    <a href="https://www.google.com/maps/search/?api=1&query=Ebisucho+Station" target="_blank" class="nav-btn">🟢 地鐵惠美須町站一鍵導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Kushikatsu+Daruma+Tsutenkaku" target="_blank" class="nav-btn">🟢 元祖炸串達摩通天閣店一鍵導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Tsutenkaku+Tower+Osaka" target="_blank" class="nav-btn">🟢 通天閣入口一鍵導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Tennoji+Zoo" target="_blank" class="nav-btn">🟢 天王寺動物園導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">15:45 - 17:30</span>
+                    <span>傍晚：道頓堀觀光船（黃金夕陽場卡位！）</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>15:45-16:15：</strong> 搭乘地鐵堺筋線僅需 1 站，在 <strong>「日本橋站」</strong> 下車。</p>
+                    <p><strong>e-PASS 免費特權 ④ —— 道頓堀水上觀光船（原價 1,200 日圓）：</strong> <strong>最關鍵密技：</strong> 16:15 抵達後第一要務，<strong>立刻持 e-PASS 去唐吉訶德下方的售票處換票</strong>，搶先兌換 17:00 或 17:30 左右最搶手的「夢幻黃金場次」！先換好票，就能氣定神閒逛街！</p>
+                    <p><strong>登船巡航（16:45-17:30）：</strong> 準時登船。坐在觀光船上隨波逐流，欣賞運河風景。當船行駛過巨大的「固力果跑跑人」招牌前，全家可以在船上拍下完全無路人干擾的最完美大合影！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Nipponbashi+Station" target="_blank" class="nav-btn">🟢 地鐵日本橋站一鍵導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Dotonbori+River+Cruise+Ticket+Office" target="_blank" class="nav-btn">🟢 道頓堀觀光船售票處導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">17:30 之後</span>
+                    <span>晚餐盛宴 ➡️ 純走路散步回飯店泡溫泉</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>晚餐海陸大抉擇：</strong>
+                    <ul>
+                        <li><strong>選項 A（螃蟹道樂 本店）：</strong> 就在運河旁。大啖精緻美味的螃蟹多吃懷石料理（烤蟹腳、螃蟹刺身與蟹肉釜飯），在冷氣房看窗外繁華河畔夜景。</li>
+                        <li><strong>選項 B（難波商圈高級和牛燒肉）：</strong> 挑選一家和牛烤肉老店，現切牛排與牛舌在烤網上滋滋作響、油花香氣四溢，對孩子來說是完美的肉食大餐！</li>
+                    </ul>
+                    </p>
+                    <p><strong>純散步歸途：</strong> 吃飽逛完後，<strong>直接純走路散步 10~15 分鐘</strong>，就能瀟灑晃回 APA 飯店大廳。直衝大浴場泡熱騰騰溫泉，洗去一天疲勞，滿足入睡！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Kani+Doraku+Dotonbori+Honten" target="_blank" class="nav-btn">🟢 螃蟹道樂本店一鍵導航</a>
+                </div>
+            </div>
+
+            <!-- Habit Card Day 8 -->
+            <div class="habit-card">
+                <div class="habit-header">🎓 體育教授 Day 8 斷捨離與每日定課</div>
+                <div class="habit-item"><strong>戰果結算：</strong> 今日全家光使用 e-PASS 免費門票（1500+1000+500+1200）每人就扎實<strong>省下高達 4,200 日圓</strong>！用省下的預算，今晚和明天盡情大啖烤和牛與螃蟹大餐！</div>
+                <div class="habit-item"><strong>大腦斷捨離：</strong> 扔掉「一定要逛完所有 e-PASS 景點」的執念。不慌不忙、能舒服泡湯才是度假的真諦。</div>
+                <div class="habit-item"><strong>每日打掃定課：</strong> 出門前，書桌維持 100% 清空，浴室拖鞋擺放整齊。</div>
+            </div>
+        </div>
+
+        <!-- ==================== DAY 9 ==================== -->
+        <div id="day-9" class="tab-content">
+            <div class="image-toggle-container">
+                <button class="toggle-btn" onclick="toggleImage(9)">🗺️ 展開/收合 本日可愛行程圖表</button>
+            </div>
+            
+            <div id="wrapper-9" class="itinerary-wrapper" style="display: none;">
+                <img class="itinerary-img" src="第九天.jpg" alt="本日可愛行程圖表" onerror="handleImageError(this, 9, '第九天.jpg')">
+            </div>
+
+            <div id="error-bubble-9" class="error-bubble" style="display: none;">
+                <h4>🌸 溫馨提示：本地行程圖對接指南</h4>
+                <p>手機未偵測到本地圖檔或處於離線狀態，若要正常顯示手繪行程圖，請：</p>
+                <ul>
+                    <li>將您下載的 <strong>第九天.png</strong> 轉為 <strong>第九天.jpg</strong> 格式。</li>
+                    <li>確保圖片檔名為小寫副檔名 <strong>第九天.jpg</strong>。</li>
+                    <li>將網頁與 9 張 JPG 圖檔放在手機/電腦的 <strong>同一個資料夾</strong> 中開啟或上傳部署。</li>
+                </ul>
+            </div>
+
+            <div class="sec-title">🛍️ 難波晨光 ➡️ 神戶海景血拼 ➡️ 啟航返台</div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">08:30 - 11:30</span>
+                    <span>上午：難波心齋橋最後補貨 ＆ 營業時間防線</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>08:30-09:30 退房打包：</strong> 在飯店享用早餐，將買的動漫、扭蛋和藥妝做最終打包。寄存大行李於櫃檯，輕裝出門。</p>
+                    <p><strong>09:30-11:30 商店街最後衝刺：</strong>
+                    <div class="alert-box">🚨 <strong>!!! 難波營業時間防線 !!!</strong> 大阪的大型百貨（如高島屋）與多數動漫玩具店（如 Animate 難波店、電器街等）在 <strong>早上 10:00 甚至 11:00 才陸續開門</strong>！早上九點半出門時，先去已開門營業的藥妝店，買齊面膜與感冒藥。</div>
+                    </p>
+                    <p><strong>💡 衣服與特產分流：</strong> 早上不要緊張地去搶衣服。全家把衣服（GU/UNIQLO/無印良品）與精美名產通通留到下午的 <strong>【神戶港 Umie】</strong>！早上只專注在藥妝和難波漏網之魚，完美免去急躁與焦慮！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Shinsaibashisuji" target="_blank" class="nav-btn">🟢 心齋橋筋一鍵導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">11:30 - 13:35</span>
+                    <span>高島屋美食街午餐 ➡️ 阪神特急直達神戶</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>大阪高島屋午餐（11:30-12:30）：</strong> 散步回飯店旁，入駐 <strong>【大阪高島屋】</strong> 樓下的豪華美食街。正午在冷氣房裡享用精緻日式便當，或購買知名的大阪「551蓬萊肉包」帶在路上吃！</p>
+                    <p><strong>12:30-12:45：</strong> 走回飯店提領大行李，出發往「大阪難波站」。</p>
+                    <p><strong>🚋 阪神電車特急一線直達：</strong> 刷 ICOCA 進站。搭乘 <strong>【阪神難波線・快速急行列車】</strong>（往神戶三宮方向），車程僅需 <strong>44 分鐘</strong> 且完全免轉車，直接在冷氣車廂一路睡到神戶！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Osaka+Takashimaya" target="_blank" class="nav-btn">🟢 大阪高島屋一鍵導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Osaka+Namba+Station" target="_blank" class="nav-btn">🟢 大阪難波站導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">13:35 - 16:30</span>
+                    <span>三之宮行李解放 ➡️ 神戶臨海樂園海景血拼</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>置物櫃寄存（13:35-14:00）：</strong> 火車準時抵達神戶三之宮站。下車直接在車站大廳用 ICOCA 鎖上全家的大行李箱與戰利品，徹底解放雙手！</p>
+                    <p><strong>轉乘地鐵：</strong> 兩手空空，搭地鐵海岸線兩站直達「神戶港（Harborland）站」，出站步行 5 分鐘直通港畔。</p>
+                    <p><strong>🌊 最終決戰：神戶港 Umie / Mosaic 廣場（14:10-16:30）：</strong>
+                    <ul>
+                        <li><strong>海景下午茶：</strong> 全家先挑選一家面向美麗神戶港紅塔的景觀咖啡廳。一邊吹著強效冷氣，一邊喝著冰拿鐵、看著窗外波光粼粼的藍色大海與豪華郵輪，享受最高品質的度假午後。</li>
+                        <li><strong>優雅大補貨：</strong> 百貨內冷氣極強、空間無比寬敞。這裡有超大間的 <strong>GU、UNIQLO、無印良品</strong> 以及神戶特產名店（Frantz 巧克力、神戶布丁）。把日圓現鈔零錢做最後的痛快消費，優雅又愜意！</li>
+                    </ul>
+                    </p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Kobe-Sannomiya+Station" target="_blank" class="nav-btn">🟢 神戶三宮站導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Harborland+Station" target="_blank" class="nav-btn">🟢 地鐵神戶港站導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Umie+Mosaic+Kobe" target="_blank" class="nav-btn">🟢 神戶臨海樂園 umie 一鍵導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">16:30 - 20:55</span>
+                    <span>傍晚：直奔神戶機場 ➡️ 夕陽登機返台</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>16:30-17:00：</strong> 搭乘地鐵回到三之宮站，打開置物櫃拿取所有行李，此時全家的戰利品已經完全完美合體。</p>
+                    <p><strong>17:00-17:20 Port Liner 最終鐵道：</strong> 刷 ICOCA 閘門搭乘 <strong>【Port Liner 捷運】</strong>（港灣人工島線）。一路上看著窗外的神戶夕陽海景，18 分鐘直達終點「神戶機場站」。</p>
+                    <p><strong>機場報到與登機：</strong> 步入神戶機場主客運航廈。前往長榮櫃檯辦理報到、託運大行李箱。<strong>晚餐提示：</strong> 進入安檢前，推薦上頂樓的 <strong>「景觀展望台」</strong> 遠眺飛機起降與神戶港夜景，並在展望台旁的餐廳吃頓舒服的神戶牛便當或洋食晚餐，為旅程畫下完美句點！</p>
+                    <p><strong>長榮 BR175 翱翔：</strong> 19:00 飛機準時起飛，台灣時間 <strong>20:55</strong> 順利降落於 <strong>桃園國際機場（TPE）第二航廈</strong>。</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Port+Liner+Sannomiya" target="_blank" class="nav-btn">🟢 Port Liner 三宮站導航</a><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Kobe+Airport+Observation+Deck" target="_blank" class="nav-btn">🟢 神戶機場展望台導航</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="time-badge">🚗 溫馨歸途：深夜自駕 26 分鐘回淡水</span>
+                </div>
+                <div class="card-content">
+                    <p>順利出關並提出所有大包小包戰利品行李。</p>
+                    <p>全家搭電梯直接下到第二航廈正下方的 <strong>P4 地下停車場</strong>，坐進自家愛車，開啟冷氣。發動引擎開上機場聯絡道，由大園端切上 <strong>台61線西濱快速道路</strong> 一路北上，由八里端直上 <strong>【淡江大橋】</strong>（2026/5/12通車）跨越淡水河口，直接切回沙崙路大門口！</p>
+                    <p><strong>極速紅利：</strong> 深夜一路高架無紅綠燈、無重車流！<strong>僅需 26 分鐘深夜無阻自駕平安回到淡水溫暖的家！</strong> 完美免去全家拖著沉重行李在深夜擠客運或客叫車的狼狽與疲憊，自駕一條龍尊貴無比、太聰明太舒服了！</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Danjiang+Bridge+Tamsui" target="_blank" class="nav-btn">🟢 淡江大橋新路線導航</a>
+                </div>
+            </div>
+
+            <!-- Habit Card Day 9 -->
+            <div class="habit-card">
+                <div class="habit-header">🎓 體育教授 Day 9 斷捨離與每日定課</div>
+                <div class="habit-item"><strong>完美返台：</strong> 8/20 晚上飛機降落桃園機場、開車回淡水時，您的行李箱井然有序，大腦與教學行政心靈也 100% 滿血復活，準備迎接新學期！</div>
+            </div>
+        </div>
+    </div> <!-- Closing tab-contents -->
+
+    <button onclick="scrollToTop()" id="btn-scroll-top" class="scroll-top" title="回到頂部">🌸</button>
+
+    <footer>
+        <p><strong>關西自駕與慢活一條龍互動手冊 v21 終極極緻美化版</strong></p>
+        <p>© 2026. Designed with ❤️ by NotebookLM for D.T.Chánh & Family.</p>
+    </footer>
+
+    <script>
+        // Tab switching logic
+        function switchTab(dayNum) {
+            const buttons = document.querySelectorAll('.tab-btn');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            if (dayNum < 1 || dayNum > buttons.length) return;
+
+            buttons.forEach(btn => btn.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+            
+            buttons[dayNum - 1].classList.add('active');
+            
+            const targetContent = document.getElementById('day-' + dayNum);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+            
+            // Smoothly scroll the tab bar to keep the active button centered
+            const tabBar = document.querySelector('.tab-bar');
+            const activeBtn = buttons[dayNum - 1];
+            if (tabBar && activeBtn) {
+                const scrollLeft = activeBtn.offsetLeft - (tabBar.offsetWidth / 2) + (activeBtn.offsetWidth / 2);
+                tabBar.scrollTo({
+                    left: scrollLeft,
+                    behavior: 'smooth'
+                });
+            }
+            
+            // Scroll main window to top
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+            
+            // Trigger MathJax re-render for the active tab content
+            if (window.MathJax && targetContent) {
+                MathJax.typesetPromise([targetContent]).catch((err) => console.log("MathJax error on tab switch:", err));
+            }
+        }
+
+        // Image toggle & Error feedback logic (Strictly display: none by default)
+        function toggleImage(dayNum) {
+            const wrapper = document.getElementById('wrapper-' + dayNum);
+            const errorBubble = document.getElementById('error-bubble-' + dayNum);
+            
+            if (!wrapper) return;
+            
+            if (wrapper.style.display === 'block') {
+                wrapper.style.display = 'none';
+                if (errorBubble) errorBubble.style.display = 'none';
+            } else {
+                wrapper.style.display = 'block';
+                // Reset error bubble state when opening
+                if (errorBubble) errorBubble.style.display = 'none';
+                
+                const img = wrapper.querySelector('.itinerary-img');
+                if (img && img.style.display === 'none') {
+                    // Image had already failed and was set to display none by error handler
+                    wrapper.style.display = 'none';
+                    if (errorBubble) errorBubble.style.display = 'block';
+                }
+            }
+        }
+
+        // Triggered when an image fails to load (offline or missing JPG)
+        function handleImageError(imgElement, dayNum, filename) {
+            const wrapper = document.getElementById('wrapper-' + dayNum);
+            if (wrapper) {
+                wrapper.style.display = 'none';
+            }
+            const errorBubble = document.getElementById('error-bubble-' + dayNum);
+            if (errorBubble) {
+                errorBubble.style.display = 'block';
+            }
+            imgElement.style.display = 'none'; // Prevent infinite trigger
+        }
+
+        // Scroll to top button logic
+        const scrollTopBtn = document.getElementById('btn-scroll-top');
+        window.onscroll = function() {
+            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                scrollTopBtn.classList.add('show');
+            } else {
+                scrollTopBtn.classList.remove('show');
+            }
+        };
+
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+    </script>
+</body>
+</html>
